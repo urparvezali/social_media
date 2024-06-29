@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 // import { useNavigate } from "react-router-dom";
 
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [hide, setHide] = useState("password");
+    const [incorr, setIncorr] = useState(false);
+    const navigate = useNavigate();
     // const navigate = useNavigate();
     const handleUsername = (value) => {
         setUsername(value);
@@ -13,10 +16,32 @@ export default function Login() {
         if (value.length <= 20) setPassword(value);
     };
     const handleLogin = () => {
-        // Implement your authentication logic here
-
-		console.log('clicked');
-        // navigate("/dashboard");
+        fetch("http://localhost:8000/login/get_auth", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    setIncorr(true);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.length) {
+                    setIncorr(false);
+                } else {
+                    document.cookie = "username:" + data;
+                    console.log("logged in");
+                    setIncorr(false);
+                    navigate("/");
+                }
+            })
+            .catch((error) => {
+                console.log("Login err", error);
+            });
     };
     const handleCheckbox = () => {
         if (hide === "password") setHide("text");
@@ -51,8 +76,9 @@ export default function Login() {
             />
             <i>Show</i>
             <br />
-			<br />
+            <br />
             <a href="/signup">{"Don't have an account?"}</a>
+            {incorr && <p>Loggin Incorrect</p>}
         </div>
     );
 }

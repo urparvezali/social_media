@@ -22,12 +22,11 @@ pub async fn get_posts(State(db): State<Arc<Mutex<Database>>>) -> Json<Vec<Post>
 }
 
 pub async fn add_post(State(db): State<Arc<Mutex<Database>>>, Json(pst): Json<PostForm>) {
-    println!("Hitted");
     let docu = doc! {
-        "_id": ObjectId::new(),
+        "_id": ObjectId::new().to_hex(),
         "user": pst.user,
         "body": pst.body,
-        "lover": Vec::<String>::new(),
+        "lovers": Vec::<String>::new(),
     };
     let posts = db.lock().await.collection("posts");
     posts.insert_one(docu, None).await.unwrap();
@@ -35,7 +34,7 @@ pub async fn add_post(State(db): State<Arc<Mutex<Database>>>, Json(pst): Json<Po
 
 pub async fn enlove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Loving>) {
     let filt = doc! {
-        "_id": lvng.post_id,
+        "_id": lvng._id,
     };
     let val = doc! {
         "$push": {"lover": lvng.lover}
@@ -46,7 +45,7 @@ pub async fn enlove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Lov
 
 pub async fn dislove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Loving>) {
     let posts: Collection<Document> = db.lock().await.collection("posts");
-    let filt = doc! {"_id": lvng.post_id,};
+    let filt = doc! {"_id": lvng._id,};
     let val = doc! {
         "$pull": {
             "lover": lvng.lover

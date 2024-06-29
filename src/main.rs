@@ -13,7 +13,7 @@ use tokio::{net::TcpListener, sync::Mutex};
 use tower_http::cors::{Any, CorsLayer};
 
 use db::get_db_conn;
-use posts::{add_post, enlove, dislove, get_posts};
+use posts::{add_post, dislove, enlove, get_posts};
 use users::{add_user, get_user};
 
 #[tokio::main]
@@ -26,8 +26,8 @@ async fn main() {
         .route("/posts/get_posts", get(get_posts))
         .route("/user", post(add_user))
         .route("/user/:username", get(get_user))
-		.route("/posts/enlove", post(enlove))
-		.route("/posts/dislove", post(dislove))
+        .route("/posts/enlove", post(enlove))
+        .route("/posts/dislove", post(dislove))
         .layer(
             CorsLayer::new()
                 .allow_headers(Any)

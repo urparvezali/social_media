@@ -1,9 +1,8 @@
-use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct User {
-    pub _id: ObjectId,
+    pub _id: String,
     pub username: String,
     pub email: String,
     pub password: String,
@@ -19,7 +18,7 @@ pub struct UserForm {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Post {
-    pub _id: ObjectId,
+    pub _id: String,
     pub user: String,
     pub body: String,
     pub lovers: Vec<String>,
@@ -31,6 +30,12 @@ pub struct PostForm {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Loving {
-    pub post_id: ObjectId,
+    pub _id: String,
     pub lover: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Auth {
+    pub username: String,
+    pub password: String,
 }

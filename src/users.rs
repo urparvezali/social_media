@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Path, State},
+    response::IntoResponse,
     Json,
 };
 use mongodb::{
@@ -10,7 +11,7 @@ use mongodb::{
 };
 use tokio::sync::Mutex;
 
-use crate::types::{User, UserForm};
+use crate::types::{Auth, User, UserForm};
 
 pub async fn get_user(
     State(db): State<Arc<Mutex<Database>>>,
@@ -25,11 +26,28 @@ pub async fn get_user(
 pub async fn add_user(State(db): State<Arc<Mutex<Database>>>, Json(usr): Json<UserForm>) {
     let users = db.lock().await.collection("users");
     let usr_doc = doc! {
-        "_id": ObjectId::new(),
+        "_id": ObjectId::new().to_hex(),
         "username": usr.username,
         "email": usr.email,
         "password": usr.password,
         "gender": usr.gender,
     };
     users.insert_one(usr_doc, None).await.unwrap();
+}
+
+pub async fn get_auth(
+    State(db): State<Arc<Mutex<Database>>>,
+    Json(auth): Json<Auth>,
+) -> impl IntoResponse {
+    let filt = doc! {
+        "username": auth.username,
+        "password": auth.password,
+    };
+
+    let users = db.lock().await.collection("users");
+    let res = users.find_one(filt, None).await.unwrap();
+    if res.is_none() {
+        return "".to_string();
+    }
+    res.unwrap()
 }
