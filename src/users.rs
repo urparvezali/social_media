@@ -6,10 +6,9 @@ use axum::{
     Json,
 };
 use mongodb::{
-    bson::{self, doc, oid::ObjectId, Document},
+    bson::{doc, oid::ObjectId, Document},
     Collection, Database,
 };
-use serde_json::json;
 use tokio::sync::Mutex;
 
 use crate::types::{Auth, User, UserForm};
