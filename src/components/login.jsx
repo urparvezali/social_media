@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { useNavigate } from "react-router-dom";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -8,15 +7,17 @@ export default function Login() {
     const [hide, setHide] = useState("password");
     const [incorr, setIncorr] = useState(false);
     const navigate = useNavigate();
-    // const navigate = useNavigate();
+
     const handleUsername = (value) => {
         setUsername(value);
     };
+
     const handlePassword = (value) => {
         if (value.length <= 20) setPassword(value);
     };
-    const handleLogin = () => {
-        fetch("http://localhost:8000/login/get_auth", {
+
+    const handleLogin = async () => {
+        fetch("http://localhost:8000/user/get_auth", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -26,59 +27,49 @@ export default function Login() {
             .then((response) => {
                 if (!response.ok) {
                     setIncorr(true);
-                }
-                return response.json();
-            })
-            .then((data) => {
-                if (data.length) {
-                    setIncorr(false);
+                    throw new Error("Login failed");
                 } else {
-                    document.cookie = "username:" + data;
-                    console.log("logged in");
+                    document.cookie = "username=" + username + ";";
                     setIncorr(false);
+                    console.log("Logged in");
                     navigate("/");
                 }
             })
             .catch((error) => {
-                console.log("Login err", error);
+                console.log("Login error", error);
+                setIncorr(true);
             });
     };
+
     const handleCheckbox = () => {
-        if (hide === "password") setHide("text");
-        else setHide("password");
+        setHide((prevHide) => (prevHide === "password" ? "text" : "password"));
     };
+
     return (
         <div className="login">
             <input
                 type="text"
-                name=""
                 id="username"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => handleUsername(e.target.value)}
-            />{" "}
+            />
             <br />
             <input
                 type={hide}
-                name=""
                 id="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => handlePassword(e.target.value)}
-            />{" "}
+            />
             <br />
             <button onClick={handleLogin}>Login</button>
-            <input
-                type="checkbox"
-                name=""
-                id="checkbox"
-                onClick={handleCheckbox}
-            />
+            <input type="checkbox" id="checkbox" onClick={handleCheckbox} />
             <i>Show</i>
             <br />
             <br />
             <a href="/signup">{"Don't have an account?"}</a>
-            {incorr && <p>Loggin Incorrect</p>}
+            {incorr && <p>Login Incorrect</p>}
         </div>
     );
 }
