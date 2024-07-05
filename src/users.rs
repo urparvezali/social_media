@@ -3,24 +3,35 @@ use std::sync::Arc;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
+    response::IntoResponse,
     Json,
 };
 use mongodb::{
     bson::{doc, oid::ObjectId, Document},
     Collection, Database,
 };
+use serde_json::json;
 use tokio::sync::Mutex;
 
-use crate::types::{Auth, User, UserForm};
+use crate::types::{Auth, UserForm};
 
 pub async fn get_user_info(
     State(db): State<Arc<Mutex<Database>>>,
     Path(username): Path<String>,
-) -> Json<User> {
+) -> impl IntoResponse {
     let filter = doc! {"username": username.clone()};
-    let users = db.lock().await.collection("users");
-    let cur = users.find_one(filter, None).await.unwrap();
-    Json(cur.unwrap())
+    let users: Collection<Document> = db.lock().await.collection("users");
+    match users.find_one(filter, None).await {
+        Ok(Some(usr)) => (StatusCode::OK, Json(json!(usr))),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({"error":"User not found"})),
+        ),
+        Err(_) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error":"Can't request user data"})),
+        ),
+    }
 }
 
 pub async fn add_user(State(db): State<Arc<Mutex<Database>>>, Json(usr): Json<UserForm>) {
@@ -32,7 +43,10 @@ pub async fn add_user(State(db): State<Arc<Mutex<Database>>>, Json(usr): Json<Us
         "password": usr.password,
         "gender": usr.gender,
     };
-    users.insert_one(usr_doc, None).await.unwrap();
+    match users.insert_one(usr_doc, None).await {
+        Ok(_) => (),
+        Err(_) => println!("User cant be added!"),
+    }
 }
 
 pub async fn get_auth(
