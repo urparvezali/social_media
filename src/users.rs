@@ -34,18 +34,25 @@ pub async fn get_user_info(
     }
 }
 
-pub async fn add_user(State(db): State<Arc<Mutex<Database>>>, Json(usr): Json<UserForm>) {
+pub async fn add_user(
+    State(db): State<Arc<Mutex<Database>>>,
+    Json(usr): Json<UserForm>,
+) -> impl IntoResponse {
     let users = db.lock().await.collection("users");
     let usr_doc = doc! {
         "_id": ObjectId::new().to_hex(),
-        "username": usr.username,
+        "username": usr.username.clone(),
         "email": usr.email,
         "password": usr.password,
         "gender": usr.gender,
     };
-    match users.insert_one(usr_doc, None).await {
-        Ok(_) => (),
-        Err(_) => println!("User cant be added!"),
+    match users.find_one(doc! {"username":usr.username}, None).await {
+        Ok(Some(_)) => StatusCode::CONFLICT,
+        Ok(None) => match users.insert_one(usr_doc, None).await {
+            Ok(_) => StatusCode::OK,
+            Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        },
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
 }
 

@@ -12,7 +12,7 @@ pub mod types;
 pub mod users;
 
 use db::get_db_conn;
-use posts::{add_post, dislove, enlove, get_posts};
+use posts::{add_post, dislove, enlove, get_posts, get_user_posts};
 use users::{add_user, get_auth, get_user_info};
 
 #[tokio::main]
@@ -26,6 +26,7 @@ async fn main() {
         .route("/user/get_auth", post(get_auth))
         .route("/posts/add_post", post(add_post))
         .route("/posts/get_posts", get(get_posts))
+		.route("/posts/get_posts/:username", get(get_user_posts))
         .route("/posts/enlove", post(enlove))
         .route("/posts/dislove", post(dislove))
         .layer(

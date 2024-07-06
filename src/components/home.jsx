@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import Login from "./login";
 export default function Home() {
     const [posts, setPost] = useState([]);
+    const [loading, setLoading] = useState(true);
     let lover = document.cookie.split("=").at(1);
+
     useEffect(() => {
         fetch("http://localhost:8000/posts/get_posts")
             .then((res) => {
@@ -12,6 +14,7 @@ export default function Home() {
                 return res.json();
             })
             .then((data) => {
+                setLoading(false);
                 setPost(data);
             })
             .catch((error) => {
@@ -45,13 +48,14 @@ export default function Home() {
             });
     };
     return lover ? (
-        <div className="posts">
+        <div className="posts ">
+            {loading && <h1>Loading data......</h1>}
             {posts.map((post) => (
-                <div className="post" key={post._id}>
-                    <h2>{post.user}</h2>
-                    <p>{post.body}</p>
+                <div className="post card card-body" key={post._id}>
+                    <h4 className="card-title text-primary">{post.username}</h4>
+                    <p className="card-text">{post.body}</p>
                     <button
-                        className="heart"
+                        className="heart btn btn-primary"
                         onClick={() => handleClick(post._id)}
                     >
                         Love

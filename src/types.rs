@@ -19,13 +19,13 @@ pub struct UserForm {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Post {
     pub _id: String,
-    pub user: String,
+    pub username: String,
     pub body: String,
     pub lovers: Vec<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostForm {
-    pub user: String,
+    pub username: String,
     pub body: String,
 }
 #[derive(Serialize, Deserialize, Debug)]

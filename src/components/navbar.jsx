@@ -1,18 +1,32 @@
 import { Link } from "react-router-dom";
 
-export default function Navbar() {
+// eslint-disable-next-line react/prop-types
+export default function Navbar({ toggle }) {
     return (
-        <nav className="navbar">
-            <ul>
-                <li>
-                    <Link to="/">Home</Link>
+        <nav className="">
+            <ul className="nav justify-content-center">
+                <li className="nav-item">
+                    <Link
+                        className="nav-link active"
+                        aria-current="page"
+                        to="/"
+                    >
+                        Home
+                    </Link>
                 </li>
-                <li>
-                    <Link to="/profile">Profile</Link>
+                <li className="nav-item">
+                    <Link className="nav-link" to="/profile">
+                        Profile
+                    </Link>
                 </li>
-                <li>
-                    <Link to="/about">About</Link>
+                <li className="nav-item">
+                    <Link className="nav-link" to="/about">
+                        About
+                    </Link>
                 </li>
+                <button className="btn btn-secondary justify-content-right" onClick={()=>{toggle()}}>
+                    Dark Mode
+                </button>
             </ul>
         </nav>
     );

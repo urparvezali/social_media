@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{extract::State, Json};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Json,
+};
 use mongodb::{
     bson::{doc, oid::ObjectId, Document},
     Collection, Database,
@@ -20,16 +25,37 @@ pub async fn get_posts(State(db): State<Arc<Mutex<Database>>>) -> Json<Vec<Post>
     }
     Json(vec)
 }
+pub async fn get_user_posts(
+    State(db): State<Arc<Mutex<Database>>>,
+    Path(username): Path<String>,
+) -> Json<Vec<Post>> {
+    let posts = db.lock().await.collection("posts");
+    let filt = doc! {"username":username};
+    let mut c = posts.find(filt, None).await.unwrap();
+    let mut vec = Vec::new();
 
-pub async fn add_post(State(db): State<Arc<Mutex<Database>>>, Json(pst): Json<PostForm>) {
+    while c.advance().await.unwrap() {
+        let x = c.deserialize_current().unwrap();
+        vec.push(x);
+    }
+    Json(vec)
+}
+
+pub async fn add_post(
+    State(db): State<Arc<Mutex<Database>>>,
+    Json(pst): Json<PostForm>,
+) -> impl IntoResponse {
     let docu = doc! {
         "_id": ObjectId::new().to_hex(),
-        "user": pst.user,
+        "username": pst.username,
         "body": pst.body,
         "lovers": Vec::<String>::new(),
     };
     let posts = db.lock().await.collection("posts");
-    posts.insert_one(docu, None).await.unwrap();
+    match posts.insert_one(docu, None).await {
+        Ok(_) => StatusCode::OK,
+        Err(_) => StatusCode::BAD_REQUEST,
+    }
 }
 
 pub async fn enlove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Loving>) {
@@ -37,7 +63,7 @@ pub async fn enlove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Lov
         "_id": lvng._id,
     };
     let val = doc! {
-        "$push": {"lover": lvng.lover}
+        "$push": {"lovers": lvng.lover}
     };
     let posts: Collection<Document> = db.lock().await.collection("posts");
     posts.update_one(filt, val, None).await.unwrap();
@@ -48,7 +74,7 @@ pub async fn dislove(State(db): State<Arc<Mutex<Database>>>, Json(lvng): Json<Lo
     let filt = doc! {"_id": lvng._id,};
     let val = doc! {
         "$pull": {
-            "lover": lvng.lover
+            "lovers": lvng.lover
         },
     };
     posts.update_one(filt, val, None).await.unwrap();

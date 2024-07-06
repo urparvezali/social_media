@@ -36,7 +36,7 @@ export default function Login() {
                 }
             })
             .catch((error) => {
-                console.log("Login error", error);
+                console.log(error);
                 setIncorr(true);
             });
     };
@@ -46,27 +46,37 @@ export default function Login() {
     };
 
     return (
-        <div className="login">
+        <div className="login container">
             <input
                 type="text"
+                className="mb-3 form-control"
                 id="username"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => handleUsername(e.target.value)}
             />
-            <br />
             <input
                 type={hide}
+                className="mb-3 form-control"
                 id="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => handlePassword(e.target.value)}
             />
-            <br />
-            <button onClick={handleLogin}>Login</button>
-            <input type="checkbox" id="checkbox" onClick={handleCheckbox} />
-            <i>Show</i>
-            <br />
+            <div className="form-check">
+                <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="checkbox"
+                    onClick={handleCheckbox}
+                />
+                <label className="form-check-label" htmlFor="checkbox">
+                    Show
+                </label>
+            </div>
+            <button className="mb-3 btn btn-primary" onClick={handleLogin}>
+                Login
+            </button>
             <br />
             <a href="/signup">{"Don't have an account?"}</a>
             {incorr && <p>Login Incorrect</p>}

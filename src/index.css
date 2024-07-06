@@ -19,7 +19,7 @@ body {
     min-width: 320px;
     min-height: 100vh;
 }
-
+/* 
 button,
 input,
 select,
@@ -36,7 +36,7 @@ select,
 }
 button:hover {
     border-color: #646cff;
-}
+} */
 html, body {
     margin: 0;
     height: 100%;
